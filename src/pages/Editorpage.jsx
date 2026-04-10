@@ -80,6 +80,7 @@ const Editor = () => {
 
   const leaveRoom = () => {
     socketRef.current.disconnect();
+    toast.success(`${location.state?.username} left the room.`);
     reactNavigate("/");
   };
 
@@ -87,21 +88,33 @@ const Editor = () => {
 
   return (
     <div className="mainWrap">
-      {/* ── SIDEBAR ── */}
-      <div className={`aside ${sidebarCollapsed ? "collapsed" : ""}`}>
+
+      {/* SIDEBAR */}
+      <div
+        className="aside"
+        style={{
+          width: sidebarCollapsed ? "50px" : "200px",
+          transition: "width 0.3s",
+          overflow: "hidden",
+          minWidth: sidebarCollapsed ? "50px" : "200px",
+        }}
+      >
         <div className="asideInner">
-          {/* Logo */}
-          <div className="logo">
-            <img className="logoImage" src="/code-sync.png" alt="logo" />
-            {!sidebarCollapsed && <span className="logo-label">CodeSync</span>}
+          <div className="logo" style={{ padding: "10px", borderBottom: "1px solid #444" }}>
+            {!sidebarCollapsed && (
+              <img className="logoImage" src="/code-sync.png" alt="logo" style={{ width: "175px" }} />
+            )}
           </div>
 
           {!sidebarCollapsed && (
             <>
-              <p className="sidebar-tagline">connect and code together</p>
-
-              <div className="clients-section">
-                <p className="section-label">Live clients</p>
+              <p style={{ color: "#94a3b8", fontSize: "13px", padding: "10px 10px 0" }}>
+                connect and code together
+              </p>
+              <div style={{ padding: "10px" }}>
+                <p style={{ color: "#64748b", fontSize: "11px", letterSpacing: "1px", marginBottom: "8px" }}>
+                  LIVE CLIENTS
+                </p>
                 <div className="clients">
                   {clients.map((client) => (
                     <Client key={client.socketId} username={client.username} />
@@ -116,16 +129,9 @@ const Editor = () => {
           {!sidebarCollapsed && (
             <>
               <button className="btn copyBtn" onClick={copyRoomId}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <rect x="1" y="3" width="7" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="4" y="1" width="7" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                </svg>
                 Copy Room ID
               </button>
               <button className="btn leaveBtn" onClick={leaveRoom}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <path d="M8 6H2M5 3l-3 3 3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
                 Leave
               </button>
             </>
@@ -133,60 +139,67 @@ const Editor = () => {
         </div>
       </div>
 
-      {/* ── MAIN AREA ── */}
-      <div className="editorWrap">
+      {/* MAIN AREA */}
+      <div
+        className="editorWrap"
+        style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}
+      >
         {/* Top bar */}
-        <div className="editor-topbar">
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "#21222c", padding: "6px 14px",
+          borderBottom: "1px solid #313244", height: "40px", flexShrink: 0,
+        }}>
           <button
-            className="topbar-btn"
             onClick={() => setSidebarCollapsed((p) => !p)}
+            style={{
+              background: "transparent", border: "none",
+              color: "#94a3b8", cursor: "pointer", fontSize: "18px", padding: "0 8px",
+            }}
             title="Toggle sidebar"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            ☰
           </button>
 
-          <div className="topbar-tabs">
-            <span className="topbar-tab active">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 2h8v8H2z" stroke="currentColor" strokeWidth="1" rx="1"/>
-              </svg>
-              main
-            </span>
-          </div>
-
-          <div className="topbar-right">
-            <span className="online-count">
-              <span className="online-dot-sm" />
-              {clients.length} online
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <span style={{ fontSize: "12px", color: "#6272a4" }}>
+              🟢 {clients.length} online
             </span>
             <button
-              className={`run-toggle-btn ${showCompiler ? "active" : ""}`}
               onClick={() => setShowCompiler((p) => !p)}
+              style={{
+                background: showCompiler ? "#7c3aed" : "#313244",
+                border: "none", borderRadius: "6px", padding: "6px 14px",
+                color: "white", fontWeight: "600", fontSize: "13px",
+                cursor: "pointer", transition: "background 0.2s",
+              }}
             >
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                <path d="M3 2l8 4.5L3 11V2z" fill="currentColor"/>
-              </svg>
-              {showCompiler ? "Hide Compiler" : "Run Code"}
+              ▶ {showCompiler ? "Hide Compiler" : "Run Code"}
             </button>
           </div>
         </div>
 
         {/* Editor + Compiler split */}
-        <div className={`editor-compiler-wrap ${showCompiler ? "split" : ""}`}>
-          <div className="code-editor-area">
+        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+
+          {/* Code Editor Area */}
+          <div style={{ flex: showCompiler ? "0 0 55%" : "1", overflow: "hidden" }}>
             <CodeEditor
               socketRef={socketRef}
               roomId={roomId}
-              oncodechange={(code) => {
-                codeRef.current = code;
-              }}
+              oncodechange={(code) => { codeRef.current = code; }}
             />
           </div>
 
+          {/* Compiler Panel */}
           {showCompiler && (
-            <div className="compiler-area">
+            <div style={{
+              flex: "0 0 45%",
+              borderLeft: "1px solid #313244",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}>
               <CompilerPanel getCode={() => codeRef.current} />
             </div>
           )}
