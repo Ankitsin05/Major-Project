@@ -1,61 +1,81 @@
-import React,{useState} from "react";
-import {v4 as uuidv4} from "uuid";
+import React, { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-const Home = ()=>{
-    const [roomId,setRoomId]=useState("");
-    const [username,setUsername]=useState("");
+
+const Home = () => {
+    const [roomId, setRoomId] = useState("");
+    const [username, setUsername] = useState("");
     const navigate = useNavigate();
 
     const createNewRoom = (e) => {
         e.preventDefault();
-        const id=uuidv4();
-        console.log("Generated new Room ID:", id); // 🔍 debug log
+        const id = uuidv4();
         setRoomId(id);
-           toast.success("Created a new room");
-              // Redirect to the new room
-              
-        // Logic to create new room
+        toast.success("Created a new room");
     };
+
     const joinRoom = () => {
-        console.log("Room ID before joining:", roomId); // 🔍 debug log
-        if(!roomId || !username){
+        if (!roomId || !username) {
             toast.error("ROOM ID & username is required");
             return;
         }
-   //Redirect
-        navigate(`/editor/${roomId}`,{
-            state:{
-                username},
+        navigate(`/editor/${roomId}`, {
+            state: { username },
         });
     };
 
-        const handleInputEnter = (e) => {
-            console.log('event',e.code);
-            if(e.code === "Enter"){
-                joinRoom();
-            }
+    const handleInputEnter = (e) => {
+        if (e.code === "Enter") {
+            joinRoom();
         }
+    };
 
-    return <div className="homepagewrapper">
-        <div className="formwrapper">
-            <img className="homepagelogo" src="/code-sync.png" alt="code-sync-logo"  width="300"/>
-            
-            <h4 className="mainLable">paste invitation Room ID</h4>
-            <div className="inputGroup">
-                <input type="text" className="inputBox" placeholder="Room ID" onChange={(e)=>setRoomId(e.target.value)} value={roomId} onKeyUp={handleInputEnter}/>
-                <input type="text" className="inputBox" placeholder="USERNAME" onChange={(e)=>setUsername(e.target.value)} value={username}   onKeyUp={handleInputEnter}/>
-                <button className="btn joinBtn" onClick={joinRoom}>Join</button>
-                <span className="createInfo"> if you don't have an invite then create &nbsp;
-                    <a onClick={createNewRoom} className="createNewBtn">new room</a>
-                </span>
-
+    return (
+        <div className="homepagewrapper">
+            {/* Branding Section */}
+            <div className="logoSection">
+                <img className="homepagelogo" src="/code-sync.png" alt="code-sync-logo" />
+                <h2 className="brandName">CodeSync</h2>
             </div>
-             </div>
-             <footer>
-               <h4 className="footer">Built with 💖 by CodeSync Team</h4>
-                </footer>
-        </div>;
-    
+
+            {/* Form Section */}
+            <div className="formwrapper">
+                <h4 className="mainLabel">Paste invitation Room ID</h4>
+                <div className="inputGroup">
+                    <input 
+                        type="text" 
+                        className="inputBox" 
+                        placeholder="Room ID" 
+                        onChange={(e) => setRoomId(e.target.value)} 
+                        value={roomId} 
+                        onKeyUp={handleInputEnter}
+                    />
+                    <input 
+                        type="text" 
+                        className="inputBox" 
+                        placeholder="USERNAME" 
+                        onChange={(e) => setUsername(e.target.value)} 
+                        value={username} 
+                        onKeyUp={handleInputEnter}
+                    />
+                    <button className="btn joinBtn" onClick={joinRoom}>Join Room</button>
+                    
+                    <span className="createInfo">
+                        If you don't have an invite then create &nbsp;
+                        <a onClick={createNewRoom} href="/" className="createNewBtn">new room</a>
+                    </span>
+                </div>
+            </div>
+
+            {/* Footer Section */}
+            <footer>
+                <h4 className="footerText">
+                    Built with 💖 by <span>CodeSync Team</span>
+                </h4>
+            </footer>
+        </div>
+    );
 };
+
 export default Home;
