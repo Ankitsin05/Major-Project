@@ -37,9 +37,7 @@ const Editor = () => {
         username: location.state?.username,
       });
 
-      socketRef.current.on("connect_error", (err) => {
-        handleErrors(err);
-      });
+      socketRef.current.on("connect_error", (err) => handleErrors(err));
 
       socketRef.current.on(ACTIONS.JOINED, ({ clients, username, socketId }) => {
         if (username !== location.state?.username) {
@@ -80,113 +78,167 @@ const Editor = () => {
 
   const leaveRoom = () => {
     socketRef.current.disconnect();
+    toast.success(`${location.state?.username} left the room.`);
     reactNavigate("/");
   };
 
   if (!location.state) return <Navigate to="/" />;
 
   return (
-    <div className="mainWrap">
-      {/* ── SIDEBAR ── */}
-      <div className={`aside ${sidebarCollapsed ? "collapsed" : ""}`}>
-        <div className="asideInner">
-          {/* Logo */}
-          <div className="logo">
-            <img className="logoImage" src="/code-sync.png" alt="logo" />
-            {!sidebarCollapsed && <span className="logo-label">CodeSync</span>}
-          </div>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "#0d1117", fontFamily: "'Segoe UI', sans-serif" }}>
 
-          {!sidebarCollapsed && (
-            <>
-              <p className="sidebar-tagline">connect and code together</p>
-
-              <div className="clients-section">
-                <p className="section-label">Live clients</p>
-                <div className="clients">
-                  {clients.map((client) => (
-                    <Client key={client.socketId} username={client.username} />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+      {/* SIDEBAR */}
+      <div style={{
+        width: sidebarCollapsed ? "0px" : "220px",
+        minWidth: sidebarCollapsed ? "0px" : "220px",
+        transition: "all 0.3s ease",
+        overflow: "hidden",
+        background: "#161b22",
+        borderRight: "1px solid #21262d",
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+      }}>
+        {/* Logo */}
+        <div style={{ padding: "16px", borderBottom: "1px solid #21262d", display: "flex", alignItems: "center", gap: "10px" }}>
+          <img src="/code-sync.png" alt="logo" style={{ width: "32px", height: "32px", borderRadius: "6px" }} />
+          <span style={{ fontSize: "15px", fontWeight: "700", color: "#58a6ff" }}>CodeSync</span>
         </div>
 
-        <div className="asidebottom">
-          {!sidebarCollapsed && (
-            <>
-              <button className="btn copyBtn" onClick={copyRoomId}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <rect x="1" y="3" width="7" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                  <rect x="4" y="1" width="7" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                </svg>
-                Copy Room ID
-              </button>
-              <button className="btn leaveBtn" onClick={leaveRoom}>
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                  <path d="M8 6H2M5 3l-3 3 3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Leave
-              </button>
-            </>
-          )}
+        {/* Clients */}
+        <div style={{ flex: 1, padding: "16px", overflowY: "auto" }}>
+          <p style={{ fontSize: "11px", color: "#484f58", letterSpacing: "1px", fontWeight: "600", marginBottom: "12px" }}>
+            LIVE CLIENTS
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {clients.map((client) => (
+              <div key={client.socketId} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px", borderRadius: "8px", background: "#0d1117", border: "1px solid #21262d" }}>
+                <div style={{
+                  width: "32px", height: "32px", borderRadius: "50%",
+                  background: "#1f6feb", display: "flex", alignItems: "center",
+                  justifyContent: "center", fontSize: "13px", fontWeight: "700", color: "white", flexShrink: 0,
+                }}>
+                  {client.username?.charAt(0).toUpperCase()}
+                </div>
+                <span style={{ fontSize: "13px", color: "#e6edf3", fontWeight: "500", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {client.username}
+                </span>
+                <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#3fb950", marginLeft: "auto", flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Buttons */}
+        <div style={{ padding: "16px", borderTop: "1px solid #21262d", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <button onClick={copyRoomId} style={{
+            background: "#1f6feb", border: "none", borderRadius: "8px",
+            padding: "9px 14px", color: "white", fontWeight: "600",
+            fontSize: "13px", cursor: "pointer", transition: "background 0.2s",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+          }}
+            onMouseEnter={e => e.target.style.background = "#388bfd"}
+            onMouseLeave={e => e.target.style.background = "#1f6feb"}
+          >
+            📋 Copy Room ID
+          </button>
+          <button onClick={leaveRoom} style={{
+            background: "transparent", border: "1px solid #f85149",
+            borderRadius: "8px", padding: "9px 14px", color: "#f85149",
+            fontWeight: "600", fontSize: "13px", cursor: "pointer",
+            transition: "all 0.2s",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(248,81,73,0.1)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+          >
+            ← Leave Room
+          </button>
         </div>
       </div>
 
-      {/* ── MAIN AREA ── */}
-      <div className="editorWrap">
-        {/* Top bar */}
-        <div className="editor-topbar">
-          <button
-            className="topbar-btn"
-            onClick={() => setSidebarCollapsed((p) => !p)}
-            title="Toggle sidebar"
-          >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
+      {/* MAIN AREA */}
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
 
-          <div className="topbar-tabs">
-            <span className="topbar-tab active">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 2h8v8H2z" stroke="currentColor" strokeWidth="1" rx="1"/>
-              </svg>
-              main
+        {/* TOP BAR */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "#161b22", padding: "0 16px",
+          borderBottom: "1px solid #21262d", height: "48px", flexShrink: 0,
+        }}>
+          {/* Left */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button onClick={() => setSidebarCollapsed(p => !p)} style={{
+              background: "transparent", border: "1px solid #30363d",
+              borderRadius: "6px", color: "#8b949e", cursor: "pointer",
+              fontSize: "14px", padding: "4px 8px", transition: "all 0.2s",
+            }}
+              onMouseEnter={e => { e.target.style.borderColor = "#8b949e"; e.target.style.color = "#e6edf3"; }}
+              onMouseLeave={e => { e.target.style.borderColor = "#30363d"; e.target.style.color = "#8b949e"; }}
+              title="Toggle sidebar"
+            >☰</button>
+            <span style={{ fontSize: "13px", color: "#484f58" }}>|</span>
+            <span style={{ fontSize: "13px", color: "#8b949e" }}>
+              Room: <span style={{ color: "#58a6ff", fontFamily: "monospace" }}>{roomId?.slice(0, 8)}...</span>
             </span>
           </div>
 
-          <div className="topbar-right">
-            <span className="online-count">
-              <span className="online-dot-sm" />
+          {/* Center - Tab */}
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <div style={{
+              background: "#0d1117", border: "1px solid #21262d",
+              borderRadius: "6px", padding: "4px 14px",
+              fontSize: "13px", color: "#e6edf3",
+              display: "flex", alignItems: "center", gap: "6px",
+            }}>
+              <span style={{ color: "#f0883e" }}>●</span> main.js
+            </div>
+          </div>
+
+          {/* Right */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "#3fb950" }}>
+              <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#3fb950" }} />
               {clients.length} online
-            </span>
-            <button
-              className={`run-toggle-btn ${showCompiler ? "active" : ""}`}
-              onClick={() => setShowCompiler((p) => !p)}
+            </div>
+            <button onClick={() => setShowCompiler(p => !p)} style={{
+              background: showCompiler ? "#1f6feb" : "transparent",
+              border: "1px solid " + (showCompiler ? "#388bfd" : "#30363d"),
+              borderRadius: "6px", padding: "5px 14px",
+              color: showCompiler ? "white" : "#8b949e",
+              fontWeight: "600", fontSize: "13px", cursor: "pointer",
+              transition: "all 0.2s", display: "flex", alignItems: "center", gap: "6px",
+            }}
+              onMouseEnter={e => { if (!showCompiler) { e.currentTarget.style.borderColor = "#8b949e"; e.currentTarget.style.color = "#e6edf3"; } }}
+              onMouseLeave={e => { if (!showCompiler) { e.currentTarget.style.borderColor = "#30363d"; e.currentTarget.style.color = "#8b949e"; } }}
             >
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                <path d="M3 2l8 4.5L3 11V2z" fill="currentColor"/>
-              </svg>
-              {showCompiler ? "Hide Compiler" : "Run Code"}
+              ▶ {showCompiler ? "Hide Compiler" : "Run Code"}
             </button>
           </div>
         </div>
 
-        {/* Editor + Compiler split */}
-        <div className={`editor-compiler-wrap ${showCompiler ? "split" : ""}`}>
-          <div className="code-editor-area">
+        {/* EDITOR + COMPILER */}
+        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+
+          {/* Code Editor */}
+          <div style={{ flex: showCompiler ? "0 0 55%" : "1", overflow: "hidden", background: "#0d1117" }}>
             <CodeEditor
               socketRef={socketRef}
               roomId={roomId}
-              oncodechange={(code) => {
-                codeRef.current = code;
-              }}
+              oncodechange={(code) => { codeRef.current = code; }}
             />
           </div>
 
+          {/* Compiler Panel */}
           {showCompiler && (
-            <div className="compiler-area">
+            <div style={{
+              flex: "0 0 45%",
+              borderLeft: "1px solid #21262d",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              background: "#161b22",
+            }}>
               <CompilerPanel getCode={() => codeRef.current} />
             </div>
           )}

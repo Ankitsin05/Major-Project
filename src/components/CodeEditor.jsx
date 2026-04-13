@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import codemirror from "codemirror";
 import ACTIONS from "../Actions";
 
@@ -9,6 +9,8 @@ import "codemirror/mode/javascript/javascript";
 import "codemirror/addon/edit/closebrackets";
 import "codemirror/addon/edit/closetag";
 
+
+
 // ❌ REMOVED: lint imports — they were showing fake JS errors on C++/Python code
 // import "codemirror/addon/lint/lint";
 // import "codemirror/addon/lint/lint.css";
@@ -16,8 +18,11 @@ import "codemirror/addon/edit/closetag";
 // import { JSHINT } from "jshint";
 // window.JSHINT = JSHINT;
 
+
 const CodeEditor = ({ socketRef, roomId, oncodechange }) => {
   const editorRef = useRef(null);
+
+   
 
   useEffect(() => {
     if (editorRef.current) return;
